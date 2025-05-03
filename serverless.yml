@@ -1,0 +1,106 @@
+service: ayora-challenge-serverless
+frameworkVersion: '3'
+useDotenv: true
+
+provider:
+  name: aws
+  region: eu-central-1
+  runtime: python3.11
+  stage: ${opt:stage, 'stg'}
+  timeout: 30
+  memorySize: 2048
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:*
+          Resource:
+            - arn:aws:s3:::${env:STATIC_FILES_BUCKET_NAME}
+            - arn:aws:s3:::${env:STATIC_FILES_BUCKET_NAME}/*
+
+functions:
+  api:
+    handler: wsgi_handler.handler
+    events:
+      - http: ANY /
+      - http: ANY /{proxy+}
+
+plugins:
+  - serverless-wsgi
+  - serverless-python-requirements
+  - serverless-dotenv-plugin
+
+custom:
+  wsgi:
+    app: ayora.config.wsgi.application
+  pythonRequirements:
+    fileName: requirements.txt
+
+package:
+  exclude:
+    # Python/Django specific
+    - venv/**
+    - .venv/**
+    - __pycache__/**
+    - *.pyc
+    - .pytest_cache/**
+    - .coverage
+
+    # Development files
+    - .git/**
+    - .gitignore
+    - .env.example
+    - .env.local
+    - README.md
+    - LICENSE
+
+    # Test files
+    - tests/**
+    - pytest.ini
+    - conftest.py
+
+    # Node/Serverless specific
+    - node_modules/**
+    - package.json
+    - package-lock.json
+
+    # Cache directories
+    - pip-cache/**
+    - .cache/**
+
+    # IDE specific
+    - .vscode/**
+    - .idea/**
+
+    # Django specific
+    - staticfiles/**
+    - media/**
+    - *.sqlite3
+    - *.db
+
+resources:
+  Resources:
+    StaticFilesBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: eu-central-1
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+
+    StaticFilesBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket:
+          Ref: StaticFilesBucket
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            - Sid: PublicReadGetObject
+              Action: "s3:GetObject"
+              Effect: Allow
+              Principal: "*"
+              Resource: "arn:aws:s3:::${env:STATIC_FILES_BUCKET_NAME}/*"

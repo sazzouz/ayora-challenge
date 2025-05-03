@@ -1,0 +1,12 @@
+{
+  "workbench.colorCustomizations": {
+    "titleBar.activeBackground": "#2e24c4",
+    "titleBar.activeForeground": "#f8f8f8",
+    "titleBar.inactiveBackground": "#4d43cd",
+    "titleBar.inactiveForeground": "#f8f8f8"
+  },
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff"
+  }
+}

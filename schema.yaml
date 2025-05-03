@@ -1,0 +1,1145 @@
+openapi: 3.0.3
+info:
+  title: Ayora API
+  version: 1.0.0
+  description: Ayora API documentation.
+paths:
+  /customers/{customerId}/orders:
+    post:
+      operationId: customers_orders_create
+      description: Place a new order.
+      parameters:
+      - in: path
+        name: customerId
+        schema:
+          type: string
+        required: true
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/OrderRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/OrderRequestRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderRequestRequest'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomersOrdersCreateErrorResponse400'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderRequest'
+          description: ''
+  /customers/{customerId}/orders/{orderId}:
+    patch:
+      operationId: customers_orders_partial_update
+      description: Add items to an existing order.
+      parameters:
+      - in: path
+        name: customerId
+        schema:
+          type: string
+        required: true
+      - in: path
+        name: orderId
+        schema:
+          type: string
+        required: true
+      tags:
+      - customers
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAddItemRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAddItemRequestRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAddItemRequestRequest'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomersOrdersPartialUpdateErrorResponse400'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddItemRequest'
+          description: ''
+  /health/:
+    get:
+      operationId: health_retrieve
+      description: Returns a success response if the server is up and running.
+      tags:
+      - health
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthRetrieveErrorResponse400'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '200':
+          description: No response body
+  /internal/refunds:
+    get:
+      operationId: internal_refunds_list
+      description: Retrieve a list of refunds (i.e. order payments linked to rejected
+        orders).
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      tags:
+      - internal
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalRefundsListErrorResponse400'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedRefundItemList'
+          description: ''
+  /restaurant/orders:
+    get:
+      operationId: restaurant_orders_list
+      description: Retrieve a list of orders.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: status
+        schema:
+          type: string
+        description: Order status.
+      tags:
+      - restaurant
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantOrdersListErrorResponse400'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedOrderList'
+          description: ''
+  /restaurant/orders/{orderId}:
+    patch:
+      operationId: restaurant_orders_partial_update
+      description: Accept or reject an order.
+      parameters:
+      - in: path
+        name: orderId
+        schema:
+          type: string
+        required: true
+      tags:
+      - restaurant
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedAcceptRejectRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedAcceptRejectRequestRequest'
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedAcceptRejectRequestRequest'
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestaurantOrdersPartialUpdateErrorResponse400'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse404'
+              examples:
+                NotFound:
+                  value:
+                    type: client_error
+                    errors:
+                    - code: not_found
+                      detail: Not found.
+                      attr: null
+          description: ''
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AcceptRejectRequest'
+          description: ''
+components:
+  schemas:
+    AcceptRejectRequest:
+      type: object
+      description: Serializer for accepting/rejecting an order.
+      properties:
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+      required:
+      - action
+    ActionEnum:
+      enum:
+      - accept
+      - reject
+      type: string
+      description: |-
+        * `accept` - accept
+        * `reject` - reject
+    AddItemRequest:
+      type: object
+      description: Serializer for adding items to an existing order.
+      properties:
+        menuItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemRequest'
+        paymentInfoId:
+          type: string
+      required:
+      - menuItems
+      - paymentInfoId
+    ClientErrorEnum:
+      enum:
+      - client_error
+      type: string
+      description: '* `client_error` - Client Error'
+    CustomersOrdersCreateError:
+      oneOf:
+      - $ref: '#/components/schemas/CustomersOrdersCreateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersCreateMenuItemsNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersCreateMenuItemsINDEXNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersCreateMenuItemsINDEXItemIdErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersCreateMenuItemsINDEXQuantityErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersCreatePaymentInfoIdErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/CustomersOrdersCreateNonFieldErrorsErrorComponent'
+          menu_items.non_field_errors: '#/components/schemas/CustomersOrdersCreateMenuItemsNonFieldErrorsErrorComponent'
+          menu_items.INDEX.non_field_errors: '#/components/schemas/CustomersOrdersCreateMenuItemsINDEXNonFieldErrorsErrorComponent'
+          menu_items.INDEX.item_id: '#/components/schemas/CustomersOrdersCreateMenuItemsINDEXItemIdErrorComponent'
+          menu_items.INDEX.quantity: '#/components/schemas/CustomersOrdersCreateMenuItemsINDEXQuantityErrorComponent'
+          payment_info_id: '#/components/schemas/CustomersOrdersCreatePaymentInfoIdErrorComponent'
+    CustomersOrdersCreateErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/CustomersOrdersCreateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/CustomersOrdersCreateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    CustomersOrdersCreateMenuItemsINDEXItemIdErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - menu_items.INDEX.item_id
+          type: string
+          description: '* `menu_items.INDEX.item_id` - menu_items.INDEX.item_id'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersCreateMenuItemsINDEXNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - menu_items.INDEX.non_field_errors
+          type: string
+          description: '* `menu_items.INDEX.non_field_errors` - menu_items.INDEX.non_field_errors'
+        code:
+          enum:
+          - invalid
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersCreateMenuItemsINDEXQuantityErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - menu_items.INDEX.quantity
+          type: string
+          description: '* `menu_items.INDEX.quantity` - menu_items.INDEX.quantity'
+        code:
+          enum:
+          - invalid
+          - max_string_length
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersCreateMenuItemsNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - menu_items.non_field_errors
+          type: string
+          description: '* `menu_items.non_field_errors` - menu_items.non_field_errors'
+        code:
+          enum:
+          - not_a_list
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersCreateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+          - invalid
+          - invalid_menu_items
+          - invalid_quantity
+          - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `invalid_menu_items` - invalid_menu_items
+            * `invalid_quantity` - invalid_quantity
+            * `null` - null
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersCreatePaymentInfoIdErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - payment_info_id
+          type: string
+          description: '* `payment_info_id` - payment_info_id'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersCreateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomersOrdersCreateError'
+      required:
+      - errors
+      - type
+    CustomersOrdersPartialUpdateError:
+      oneOf:
+      - $ref: '#/components/schemas/CustomersOrdersPartialUpdateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersPartialUpdateMenuItemsNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersPartialUpdateMenuItemsINDEXNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersPartialUpdateMenuItemsINDEXItemIdErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersPartialUpdateMenuItemsINDEXQuantityErrorComponent'
+      - $ref: '#/components/schemas/CustomersOrdersPartialUpdatePaymentInfoIdErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/CustomersOrdersPartialUpdateNonFieldErrorsErrorComponent'
+          menu_items.non_field_errors: '#/components/schemas/CustomersOrdersPartialUpdateMenuItemsNonFieldErrorsErrorComponent'
+          menu_items.INDEX.non_field_errors: '#/components/schemas/CustomersOrdersPartialUpdateMenuItemsINDEXNonFieldErrorsErrorComponent'
+          menu_items.INDEX.item_id: '#/components/schemas/CustomersOrdersPartialUpdateMenuItemsINDEXItemIdErrorComponent'
+          menu_items.INDEX.quantity: '#/components/schemas/CustomersOrdersPartialUpdateMenuItemsINDEXQuantityErrorComponent'
+          payment_info_id: '#/components/schemas/CustomersOrdersPartialUpdatePaymentInfoIdErrorComponent'
+    CustomersOrdersPartialUpdateErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/CustomersOrdersPartialUpdateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/CustomersOrdersPartialUpdateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    CustomersOrdersPartialUpdateMenuItemsINDEXItemIdErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - menu_items.INDEX.item_id
+          type: string
+          description: '* `menu_items.INDEX.item_id` - menu_items.INDEX.item_id'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersPartialUpdateMenuItemsINDEXNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - menu_items.INDEX.non_field_errors
+          type: string
+          description: '* `menu_items.INDEX.non_field_errors` - menu_items.INDEX.non_field_errors'
+        code:
+          enum:
+          - invalid
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersPartialUpdateMenuItemsINDEXQuantityErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - menu_items.INDEX.quantity
+          type: string
+          description: '* `menu_items.INDEX.quantity` - menu_items.INDEX.quantity'
+        code:
+          enum:
+          - invalid
+          - max_string_length
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `max_string_length` - max_string_length
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersPartialUpdateMenuItemsNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - menu_items.non_field_errors
+          type: string
+          description: '* `menu_items.non_field_errors` - menu_items.non_field_errors'
+        code:
+          enum:
+          - not_a_list
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `not_a_list` - not_a_list
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersPartialUpdateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+          - invalid
+          - invalid_customer_for_order
+          - invalid_status
+          - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `invalid_customer_for_order` - invalid_customer_for_order
+            * `invalid_status` - invalid_status
+            * `null` - null
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersPartialUpdatePaymentInfoIdErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - payment_info_id
+          type: string
+          description: '* `payment_info_id` - payment_info_id'
+        code:
+          enum:
+          - blank
+          - invalid
+          - 'null'
+          - null_characters_not_allowed
+          - required
+          - surrogate_characters_not_allowed
+          type: string
+          description: |-
+            * `blank` - blank
+            * `invalid` - invalid
+            * `null` - null
+            * `null_characters_not_allowed` - null_characters_not_allowed
+            * `required` - required
+            * `surrogate_characters_not_allowed` - surrogate_characters_not_allowed
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    CustomersOrdersPartialUpdateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/CustomersOrdersPartialUpdateError'
+      required:
+      - errors
+      - type
+    Error404:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ErrorCode404Enum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    ErrorCode404Enum:
+      enum:
+      - not_found
+      type: string
+      description: '* `not_found` - Not Found'
+    ErrorResponse404:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/Error404'
+      required:
+      - errors
+      - type
+    HealthRetrieveErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    InternalRefundsListErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          client_error: '#/components/schemas/ParseErrorResponse'
+    Order:
+      type: object
+      description: Read-only serializer for an order.
+      properties:
+        orderId:
+          type: string
+          description: Unique identifier for the order.
+        customerId:
+          type: string
+          readOnly: true
+          description: Unique identifier for the customer who placed the order.
+        orderedAt:
+          type: string
+          format: date-time
+          description: Date and time the order was placed (UTC)
+        menuItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          description: Order items linked to the order.
+        status:
+          allOf:
+          - $ref: '#/components/schemas/StatusEnum'
+          description: Status of the order.
+          readOnly: true
+      required:
+      - customerId
+      - menuItems
+      - orderId
+      - orderedAt
+      - status
+    OrderItem:
+      type: object
+      description: Read-only details for an order item.
+      properties:
+        quantity:
+          type: integer
+          readOnly: true
+          description: Number of items ordered.
+        itemId:
+          type: string
+          readOnly: true
+          description: Unique identifier of the item.
+      required:
+      - itemId
+      - quantity
+    OrderItemRequest:
+      type: object
+      description: Serializer for order item in requests.
+      properties:
+        itemId:
+          type: string
+          description: Unique identifier of the item.
+        quantity:
+          type: integer
+          description: Number of items ordered.
+      required:
+      - itemId
+      - quantity
+    OrderItemRequestRequest:
+      type: object
+      description: Serializer for order item in requests.
+      properties:
+        itemId:
+          type: string
+          minLength: 1
+          description: Unique identifier of the item.
+        quantity:
+          type: integer
+          description: Number of items ordered.
+      required:
+      - itemId
+      - quantity
+    OrderRequest:
+      type: object
+      description: Serializer for creating an order.
+      properties:
+        menuItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemRequest'
+        paymentInfoId:
+          type: string
+      required:
+      - menuItems
+      - paymentInfoId
+    OrderRequestRequest:
+      type: object
+      description: Serializer for creating an order.
+      properties:
+        menuItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemRequestRequest'
+        paymentInfoId:
+          type: string
+          minLength: 1
+      required:
+      - menuItems
+      - paymentInfoId
+    PaginatedOrderList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Order'
+    PaginatedRefundItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/RefundItem'
+    ParseError:
+      type: object
+      properties:
+        code:
+          $ref: '#/components/schemas/ParseErrorCodeEnum'
+        detail:
+          type: string
+        attr:
+          type: string
+          nullable: true
+      required:
+      - attr
+      - code
+      - detail
+    ParseErrorCodeEnum:
+      enum:
+      - parse_error
+      type: string
+      description: '* `parse_error` - Parse Error'
+    ParseErrorResponse:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ClientErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ParseError'
+      required:
+      - errors
+      - type
+    PatchedAcceptRejectRequestRequest:
+      type: object
+      description: Serializer for accepting/rejecting an order.
+      properties:
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+    PatchedAddItemRequestRequest:
+      type: object
+      description: Serializer for adding items to an existing order.
+      properties:
+        menuItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItemRequestRequest'
+        paymentInfoId:
+          type: string
+          minLength: 1
+    RefundItem:
+      type: object
+      description: Read-only details for an order payment requiring a refund.
+      properties:
+        orderId:
+          type: string
+          readOnly: true
+          description: Unique identifier for the order.
+        paymentInfoId:
+          type: string
+          readOnly: true
+          description: Unique identifier for the order payment.
+      required:
+      - orderId
+      - paymentInfoId
+    RestaurantOrdersListError:
+      oneOf:
+      - $ref: '#/components/schemas/RestaurantOrdersListStatusErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          status: '#/components/schemas/RestaurantOrdersListStatusErrorComponent'
+    RestaurantOrdersListErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/RestaurantOrdersListValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/RestaurantOrdersListValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    RestaurantOrdersListStatusErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - status
+          type: string
+          description: '* `status` - status'
+        code:
+          enum:
+          - null_characters_not_allowed
+          type: string
+          description: '* `null_characters_not_allowed` - null_characters_not_allowed'
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    RestaurantOrdersListValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestaurantOrdersListError'
+      required:
+      - errors
+      - type
+    RestaurantOrdersPartialUpdateActionErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - action
+          type: string
+          description: '* `action` - action'
+        code:
+          enum:
+          - invalid_choice
+          - 'null'
+          - required
+          type: string
+          description: |-
+            * `invalid_choice` - invalid_choice
+            * `null` - null
+            * `required` - required
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    RestaurantOrdersPartialUpdateError:
+      oneOf:
+      - $ref: '#/components/schemas/RestaurantOrdersPartialUpdateNonFieldErrorsErrorComponent'
+      - $ref: '#/components/schemas/RestaurantOrdersPartialUpdateActionErrorComponent'
+      discriminator:
+        propertyName: attr
+        mapping:
+          non_field_errors: '#/components/schemas/RestaurantOrdersPartialUpdateNonFieldErrorsErrorComponent'
+          action: '#/components/schemas/RestaurantOrdersPartialUpdateActionErrorComponent'
+    RestaurantOrdersPartialUpdateErrorResponse400:
+      oneOf:
+      - $ref: '#/components/schemas/RestaurantOrdersPartialUpdateValidationError'
+      - $ref: '#/components/schemas/ParseErrorResponse'
+      discriminator:
+        propertyName: type
+        mapping:
+          validation_error: '#/components/schemas/RestaurantOrdersPartialUpdateValidationError'
+          client_error: '#/components/schemas/ParseErrorResponse'
+    RestaurantOrdersPartialUpdateNonFieldErrorsErrorComponent:
+      type: object
+      properties:
+        attr:
+          enum:
+          - non_field_errors
+          type: string
+          description: '* `non_field_errors` - non_field_errors'
+        code:
+          enum:
+          - invalid
+          - invalid_already_finalised
+          - 'null'
+          type: string
+          description: |-
+            * `invalid` - invalid
+            * `invalid_already_finalised` - invalid_already_finalised
+            * `null` - null
+        detail:
+          type: string
+      required:
+      - attr
+      - code
+      - detail
+    RestaurantOrdersPartialUpdateValidationError:
+      type: object
+      properties:
+        type:
+          $ref: '#/components/schemas/ValidationErrorEnum'
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/RestaurantOrdersPartialUpdateError'
+      required:
+      - errors
+      - type
+    StatusEnum:
+      enum:
+      - placed
+      - accepted
+      - rejected
+      type: string
+    ValidationErrorEnum:
+      enum:
+      - validation_error
+      type: string
+      description: '* `validation_error` - Validation Error'
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
+servers:
+- url: http://localhost:8000

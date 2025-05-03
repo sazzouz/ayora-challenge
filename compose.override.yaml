@@ -1,0 +1,127 @@
+---
+# This file is required to bind ports in development, since binding ports
+# in the regular compose file will interfere with scaling in production,
+# due to how the `ports` directive is merged with multiple files.
+#
+# This file is ignored in production, but
+# it is automatically picked up in development with:
+#
+#  $ docker compose up
+#
+# Guidance:
+# - We only bind ports directly in development
+# - We only mount source code in development
+
+name: ayora
+
+x-common: &common
+  env_file: .env
+  restart: on-failure
+
+x-ayora-common: &ayora-common
+  <<: *common
+  volumes:
+    - .:/code
+  environment:
+    - DJANGO_SETTINGS_MODULE=config.settings.dev
+
+services:
+  db:
+    <<: *common
+    image: postgres:17.2-alpine
+    container_name: ayora-db
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-ayora}
+      - POSTGRES_USER=${POSTGRES_USER:-ayora}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ayora}
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "sh -c 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}'",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    <<: *common
+    image: redis:7.4-alpine
+    container_name: ayora-redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  ayora:
+    <<: *ayora-common
+    container_name: ayora
+    command: poetry run ./ayora/manage.py dev
+    restart: no
+    ports:
+      - "8000:8000"
+    build:
+      args:
+        - UID=${UID:-1000}
+        - GID=${GID:-1000}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: /bin/sh /code/docker/django/healthcheck.sh
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  celery: &celery
+    <<: *ayora-common
+    container_name: ayora-celery
+    command: celery --workdir ./ayora -A config worker -l info
+    depends_on:
+      ayora:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "celery", "-b", "${REDIS_URL}", "inspect", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  celery-beat:
+    <<: *celery
+    container_name: ayora-celery-beat
+    command: celery --workdir ./ayora -A config beat --scheduler django -l info
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery:
+        condition: service_healthy
+
+  celery-flower:
+    <<: *celery
+    container_name: ayora-celery-flower
+    command: celery --workdir ./ayora -A config flower -l info --port=5555
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_FLOWER_USER=debug
+      - CELERY_FLOWER_PASSWORD=debug
+      - FLOWER_BASIC_AUTH=flower:flower
+      - FLOWER_PERSISTENT=False
+    depends_on:
+      redis:
+        condition: service_healthy
+      celery:
+        condition: service_healthy
+
+volumes:
+  db-data:

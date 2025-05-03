@@ -1,0 +1,7 @@
+from ..enums import OrderStatus
+
+ORDER__ACCEPTED_SOURCE_STATES = [OrderStatus.PLACED]
+
+ORDER__REJECTED_SOURCE_STATES = [OrderStatus.PLACED]
+
+ORDER__AUTO_REJECT_MINUTES = 5

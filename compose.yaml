@@ -1,0 +1,38 @@
+---
+# Base project configuration. Used for both development and production.
+# `compose.overrides.yaml` will automatically extend this when running the local build.
+
+services:
+  ayora: &ayora
+    image: ayora
+    build:
+      target: development_build
+      context: .
+      dockerfile: docker/django/Dockerfile
+      args:
+        DJANGO_STATIC_ROOT: ${DJANGO_STATIC_ROOT}
+        DJANGO_MEDIA_ROOT: ${DJANGO_MEDIA_ROOT}
+        FLOWER_STORAGE_ROOT: ${FLOWER_STORAGE_ROOT}
+    volumes:
+      - django-static:${DJANGO_STATIC_ROOT}
+      - django-media:${DJANGO_MEDIA_ROOT}
+    restart: unless-stopped
+
+  celery: &celery
+    <<: *ayora
+    depends_on:
+      - ayora
+
+  celery-beat:
+    <<: *celery
+    depends_on:
+      - celery
+
+  celery-flower:
+    <<: *celery
+    depends_on:
+      - celery
+
+volumes:
+  django-static:
+  django-media:

@@ -1,0 +1,38 @@
+repos:
+  # cleaning
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-yaml
+        language_version: python3.11
+      - id: end-of-file-fixer
+        language_version: python3.11
+        exclude: ^schema/
+      - id: trailing-whitespace
+        language_version: python3.11
+      - id: no-commit-to-branch
+        language_version: python3.11
+        name: "You are trying to commit to `main`."
+        args: ["--branch", "main"]
+
+  # linting and formatting
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.8
+    hooks:
+      - id: ruff
+      - id: ruff-format
+
+  # Django syntax upgrading
+  - repo: https://github.com/adamchainz/django-upgrade
+    rev: "1.24.0"
+    hooks:
+      - id: django-upgrade
+        args: [--target-version, "5.0"]
+
+  # commit message
+  - repo: https://github.com/compilerla/conventional-pre-commit
+    rev: v4.1.0
+    hooks:
+      - id: conventional-pre-commit
+        stages: [commit-msg]
+        args: []

@@ -1,0 +1,11 @@
+# rules: https://jorisroovers.com/gitlint/rules/
+
+[general]
+contrib=contrib-title-conventional-commits
+# B6 = body-is-missing
+# B5 = body-min-length
+ignore=B6, B5
+
+[contrib-title-conventional-commits]
+# Specify allowed commit types. For details see: https://www.conventionalcommits.org/
+types = feat,fix,docs,style,refactor,test,perf,chore,revert,ci,build
