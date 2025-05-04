@@ -102,6 +102,73 @@ To test this flow locally, you can:
 3. Either accept/reject it, or wait 5 minutes to see auto-rejection
 4. Check the refunds endpoint to see refund requests
 
+## Data Model
+
+### Model Relationships
+
+```
+Order
+│
+├── id (PK)
+├── customer_id
+├── status (FSM field: placed, accepted, rejected)
+├── accepted_at (nullable datetime)
+├── rejected_at (nullable datetime)
+├── created_at
+└── updated_at
+    │
+    ├────────────────────┐
+    ▼                    ▼
+OrderItem             OrderPayment
+│                     │
+├── id (PK)           ├── id (PK)
+├── order (FK)        ├── order (FK)
+├── item_id           ├── payment_info_id
+├── quantity          ├── created_at
+├── created_at        └── updated_at
+└── updated_at
+```
+
+The data model follows these key relationships:
+
+- `Order` is the central entity with a unique ID and customer information
+- `OrderItem` has a many-to-one relationship with `Order` (one order can have multiple items)
+- `OrderPayment` has a many-to-one relationship with `Order` (one order can have multiple payments)
+- Both `OrderItem` and `OrderPayment` include a foreign key constraint to `Order` with CASCADE deletion
+
+The system enforces uniqueness constraints:
+
+- Each `item_id` can only appear once per `Order` in the `OrderItem` table, as quantity should be incremented instead
+- Each `payment_info_id` can only appear once per `Order` in the `OrderPayment` table
+
+### Order State Machine
+
+The Order model utilises a Finite State Machine (FSM) pattern through the `OrderFSM` mixin to manage order status transitions. The FSM ensures data integrity by controlling the allowed state transitions:
+
+```
+            ┌───────────┐
+            │  PLACED   │
+            └───────────┘
+                  │
+          ┌───────┴───────┐
+          │               │
+          ▼               ▼
+    ┌───────────┐   ┌───────────┐
+    │  REJECTED │   │  ACCEPTED │
+    └───────────┘   └───────────┘
+```
+
+Key FSM characteristics:
+
+- All orders start in the `PLACED` state
+- Orders can only transition from `PLACED` to either `ACCEPTED` or `REJECTED`
+- Once an order reaches a terminal state (`ACCEPTED` or `REJECTED`), it cannot transition back to `PLACED`
+- State transitions are strictly controlled through dedicated methods (`mark_as_accepted`, `mark_as_rejected`)
+- Each transition records the timestamp of the action in corresponding fields (`accepted_at`, `rejected_at`)
+- The FSM enforces validation through conditional methods (`can_mark_as_accepted`, `can_mark_as_rejected`)
+
+This implementation ensures that order state changes follow a predictable, auditable pattern and prevents invalid state transitions, maintaining data integrity throughout the order lifecycle.
+
 ## Testing
 
 A baseline of tests covering most of the critical paths have been implemented using a standard `pytest` setup, decoupling this from anything Django-specific. Use either `make test` or `make test-parallel` to run these, which will run the primary test suite found in `ayora/order/tests/`.
@@ -146,7 +213,7 @@ To generate a fresh OpenAPI schema:
 make schema
 ```
 
-Please note: The schema includes some extra details beyond the task requirements, but the critical paths outlined in the spec should all be there and wired up as expected. Due to the typical setup I use, it would’ve been a poor use of time to unpick some additional details that get auto-generated from project dependencies, such as standardised error types, pagination, etc.
+Please note: The schema includes some extra details beyond the task requirements, but the critical paths outlined in the spec should all be there and wired up as expected. Due to the typical setup I use, it would've been a poor use of time to unpick some additional details that get auto-generated from project dependencies, such as standardised error types, pagination, etc.
 
 ## Extra Comments
 
@@ -207,7 +274,7 @@ The recuring auto-rejection task could be implemented as with EventBridge to exe
 - Lambda invocations: ~43,800 per month (every minute) + scheduled invocations exactly 5 minutes after order is placed
 - Total estimated cost: ~ less than $1 per month
 
-This negligible cost provides great operational value in ensuring orders are processed in a timely manner. This assumes the service isn’t handling a high volume of orders. In that cases, it may be better to remove the per-order scheduled task and rely on a well-tuned recurring job instead, perhaps more frequent that per-minute.
+This negligible cost provides great operational value in ensuring orders are processed in a timely manner. This assumes the service isn't handling a high volume of orders. In that cases, it may be better to remove the per-order scheduled task and rely on a well-tuned recurring job instead, perhaps more frequent that per-minute.
 
 ### Authorisation Strategy
 
@@ -257,7 +324,7 @@ While setting up CI/CD was outside the scope of this challenge, here's how I wou
 
 ### Why Django?
 
-Django was chosen for this prototype due to my familiarity with it and hence for rapid development. While I fully acknowledge it's not the optimal choice for serverless deployments due to its larger footprint, where libraries like FastAPI and Flask have seen much greater adoption in microservice architectures, it just allowed me to focus on the underlying service design and business logic implementation, and is therefore a more authentic reflection of how I currently build API services. The code patterns used (such as services, selectors, etc.) loosen the coupling with framework-specific code, helping to simplify transitioning to another framework if needed.
+Django was chosen for this prototype due to my familiarity with it and hence for rapid development. While I fully acknowledged it's not the optimal choice for serverless deployments due to its larger footprint, where libraries like FastAPI and Flask have seen much greater adoption in microservice architectures, it just allowed me to focus on the underlying service design and business logic implementation, and is therefore a more authentic reflection of how I currently build API services. The code patterns used (such as services, selectors, etc.) loosen the coupling with framework-specific code, helping to simplify transitioning to another framework if needed.
 
 With sufficient test coverage covering each of the critical paths, and following TDD principles, we could swap out Django for one of these more lightweight web framework alternatives while ensuring that the service still respects the expected interface for clients, and making it more production-grade and maintainable for serverless, cloud-native deployment environments.
 
