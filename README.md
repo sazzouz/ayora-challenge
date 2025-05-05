@@ -70,6 +70,8 @@ make shell
 make schema
 ```
 
+Run `make help` to see all available commands.
+
 ## API Documentation
 
 The API follows the OpenAPI specification provided in the challenge. You can access the Swagger UI to explore the API at `http://localhost:8000/schema/swagger-ui/` when running the service locally.
