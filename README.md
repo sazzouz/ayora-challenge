@@ -104,6 +104,32 @@ To test this flow locally, you can:
 3. Either accept/reject it, or wait 5 minutes to see auto-rejection
 4. Check the refunds endpoint to see refund requests
 
+## Project Structure
+
+The project follows a typical Django architecture with separate apps for different responsibilities:
+
+```
+ayora/                          # Django project root
+├── config/                     # Project-level configuration
+│   ├── settings/               # Environment-specific settings
+│   ├── urls.py                 # Project URL routing
+│   └── wsgi.py                 # WSGI application entry point
+│
+├── core/                       # Reusable components and utilities
+│   ├── models/                 # Abstract models and mixins
+│   ├── services/               # Cross-cutting services
+│   └── utils/                  # Utility functions
+│
+├── order/                      # Main business application
+│   ├── api/                    # API endpoints and serializers
+│   ├── models/                 # Order-related data models
+│   ├── services/               # Business logic services
+│   ├── tasks/                  # Async task definitions
+│   └── tests/                  # Test suite for order functionality
+│
+└── manage.py                   # Django command-line utility
+```
+
 ## Data Model
 
 ### Model Relationships
@@ -170,32 +196,6 @@ Key FSM characteristics:
 - The FSM enforces validation through conditional methods (`can_mark_as_accepted`, `can_mark_as_rejected`)
 
 This implementation ensures that order state changes follow a predictable, auditable pattern and prevents invalid state transitions, maintaining data integrity throughout the order lifecycle.
-
-## Project Structure
-
-The project follows a typical Django architecture with separate apps for different responsibilities:
-
-```
-ayora/                          # Django project root
-├── config/                     # Project-level configuration
-│   ├── settings/               # Environment-specific settings
-│   ├── urls.py                 # Project URL routing
-│   └── wsgi.py                 # WSGI application entry point
-│
-├── core/                       # Reusable components and utilities
-│   ├── models/                 # Abstract models and mixins
-│   ├── services/               # Cross-cutting services
-│   └── utils/                  # Utility functions
-│
-├── order/                      # Main business application
-│   ├── api/                    # API endpoints and serializers
-│   ├── models/                 # Order-related data models
-│   ├── services/               # Business logic services
-│   ├── tasks/                  # Async task definitions
-│   └── tests/                  # Test suite for order functionality
-│
-└── manage.py                   # Django command-line utility
-```
 
 ## Testing
 
