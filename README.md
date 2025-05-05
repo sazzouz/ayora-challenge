@@ -171,6 +171,32 @@ Key FSM characteristics:
 
 This implementation ensures that order state changes follow a predictable, auditable pattern and prevents invalid state transitions, maintaining data integrity throughout the order lifecycle.
 
+## Project Structure
+
+The project follows a typical Django architecture with separate apps for different responsibilities:
+
+```
+ayora/                          # Django project root
+├── config/                     # Project-level configuration
+│   ├── settings/               # Environment-specific settings
+│   ├── urls.py                 # Project URL routing
+│   └── wsgi.py                 # WSGI application entry point
+│
+├── core/                       # Reusable components and utilities
+│   ├── models/                 # Abstract models and mixins
+│   ├── services/               # Cross-cutting services
+│   └── utils/                  # Utility functions
+│
+├── order/                      # Main business application
+│   ├── api/                    # API endpoints and serializers
+│   ├── models/                 # Order-related data models
+│   ├── services/               # Business logic services
+│   ├── tasks/                  # Async task definitions
+│   └── tests/                  # Test suite for order functionality
+│
+└── manage.py                   # Django command-line utility
+```
+
 ## Testing
 
 A baseline of tests covering most of the critical paths have been implemented using a standard `pytest` setup, decoupling this from anything Django-specific. Use either `make test` or `make test-parallel` to run these, which will run the primary test suite found in `ayora/order/tests/`.
