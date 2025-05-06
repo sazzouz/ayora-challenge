@@ -79,12 +79,151 @@ The API follows the OpenAPI specification provided in the challenge. You can acc
 ### Key Endpoints
 
 - `POST http://localhost:8000/customers/{customerId}/orders` - Place a new order
+
+  - **Request Body Example (application/json):**
+    ```json
+    {
+      "menuItems": [
+        {
+          "itemId": "item123",
+          "quantity": 2
+        },
+        {
+          "itemId": "item456",
+          "quantity": 1
+        }
+      ],
+      "paymentInfoId": "payment789"
+    }
+    ```
+  - **Response (201 Created):**
+    ```json
+    {
+      "orderId": "order123",
+      "customerId": "customer456",
+      "orderedAt": "2023-10-01T12:00:00Z",
+      "menuItems": [
+        {
+          "itemId": "item123",
+          "quantity": 2
+        },
+        {
+          "itemId": "item456",
+          "quantity": 1
+        }
+      ],
+      "status": "placed"
+    }
+    ```
+
 - `PATCH http://localhost:8000/customers/{customerId}/orders/{orderId}` - Add items to an existing order
+
+  - **Request Body Example (application/json):**
+    ```json
+    {
+      "menuItems": [
+        {
+          "itemId": "item789",
+          "quantity": 3
+        }
+      ],
+      "paymentInfoId": "payment101"
+    }
+    ```
+  - **Response (200 OK):**
+    ```json
+    {
+      "orderId": "order123",
+      "customerId": "customer456",
+      "orderedAt": "2023-10-01T12:00:00Z",
+      "menuItems": [
+        {
+          "itemId": "item123",
+          "quantity": 2
+        },
+        {
+          "itemId": "item456",
+          "quantity": 1
+        },
+        {
+          "itemId": "item789",
+          "quantity": 3
+        }
+      ],
+      "status": "placed"
+    }
+    ```
+
 - `GET http://localhost:8000/restaurant/orders` - List all orders (with optional status filter)
-  - Example: `GET http://localhost:8000/restaurant/orders?status=accepted` - List only accepted orders
-  - Example: `GET http://localhost:8000/restaurant/orders?status=rejected` - List only rejected orders
+
+  - **Example:** `GET http://localhost:8000/restaurant/orders?status=accepted` - List only accepted orders
+  - **Example:** `GET http://localhost:8000/restaurant/orders?status=rejected` - List only rejected orders
+  - **Response (200 OK):**
+    ```json
+    {
+      "count": 2,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "orderId": "order123",
+          "customerId": "customer456",
+          "orderedAt": "2023-10-01T12:00:00Z",
+          "menuItems": [
+            {
+              "itemId": "item123",
+              "quantity": 2
+            }
+          ],
+          "status": "accepted"
+        },
+        {
+          "orderId": "order124",
+          "customerId": "customer789",
+          "orderedAt": "2023-10-01T13:00:00Z",
+          "menuItems": [
+            {
+              "itemId": "item456",
+              "quantity": 1
+            }
+          ],
+          "status": "rejected"
+        }
+      ]
+    }
+    ```
+
 - `PATCH http://localhost:8000/restaurant/orders/{orderId}` - Accept or reject an order
+
+  - **Request Body Example (application/json):**
+    ```json
+    {
+      "action": "accept"
+    }
+    ```
+  - **Response (200 OK):**
+    ```json
+    {
+      "orderId": "order123",
+      "status": "accepted"
+    }
+    ```
+
 - `GET http://localhost:8000/internal/refunds` - List all refund requests
+  - **Response (200 OK):**
+    ```json
+    {
+      "count": 1,
+      "next": null,
+      "previous": null,
+      "results": [
+        {
+          "orderId": "order124",
+          "paymentInfoId": "payment789"
+        }
+      ]
+    }
+    ```
 
 ## Sample Flow
 
